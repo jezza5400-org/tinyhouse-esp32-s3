@@ -68,11 +68,9 @@ bool publishCombinedPayload() {
 		return false;
 	}
 
-	if (Serial) {
-		Serial.println("Combined JSON payload:");
-		serializeJson(combinedDoc, Serial);
-		Serial.println();
-	}
+	Serial.println("Combined JSON payload:");
+	serializeJson(combinedDoc, Serial);
+	Serial.println();
 
 	return jsonSender.send(combinedDoc);
 }

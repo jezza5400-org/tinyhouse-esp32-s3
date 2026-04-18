@@ -4,11 +4,11 @@ WiFiSender::WiFiSender(const char *host, uint16_t port, const char *thing)
 	: _host(host), _port(port), _thing(thing) {}
 
 bool WiFiSender::send(const JsonDocument &payloadDoc) {
-	if (Serial) Serial.println(String("Connecting to ") + _host + ":" + String(_port));
+	Serial.println(String("Connecting to ") + _host + ":" + String(_port));
 	_client.stop();
 
 	if (!_client.connect(_host, _port)) {
-		if (Serial) Serial.println("Connection failed");
+		Serial.println("Connection failed");
 		return false;
 	}
 
@@ -23,14 +23,12 @@ bool WiFiSender::send(const JsonDocument &payloadDoc) {
 	serializeJson(payloadDoc, _client);
 
 	unsigned long start = millis();
-	while ((millis() - start) < 1000) {
-		while (_client.available()) {
-			int incoming = _client.read();
-			if (Serial && incoming >= 0) Serial.write(static_cast<uint8_t>(incoming));
+	while ((millis() - start) < 1000 && (_client.connected() != 0 || _client.available() != 0)) {
+		while (_client.available() != 0) {
+			Serial.write(static_cast<uint8_t>(_client.read()));
 			start = millis();
 		}
-		if (!_client.connected() && !_client.available()) break;
-		delay(1);
+		yield();
 	}
 
 	_client.stop();

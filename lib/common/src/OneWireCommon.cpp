@@ -24,7 +24,7 @@ void OneWireCommon::poll(bool blocking) {
 	_temperatureC = _addressKnown ? _sensors.getTempC(_address) : DEVICE_DISCONNECTED_C;
 	if (_temperatureC == DEVICE_DISCONNECTED_C) {
 		if (_addressKnown && !_sensors.isConnected(_address)) _addressKnown = false;
-		if (Serial) Serial.println("OneWire device disconnected.");
+		Serial.println("OneWire device disconnected.");
 	}
 
 	_sensors.requestTemperatures();

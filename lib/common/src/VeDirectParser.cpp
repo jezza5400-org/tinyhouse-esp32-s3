@@ -32,13 +32,13 @@ void VeDirectParser::finalizeWorkingFrame() {
 	// each assignment keeps only the low 8 bits, which is equivalent to modulo 256.
 	// So `_checksum != 0` means the frame sum is non-zero in mod-256 arithmetic.
 	if (_checksum != 0) {
-		if (Serial) Serial.println("VE.Direct frame dropped (checksum mismatch)");
+		Serial.println("VE.Direct frame dropped (checksum mismatch)");
 		resetWorkingFrame();
 		return;
 	}
 
 	if (_workingFrameDoc.overflowed()) {
-		if (Serial) Serial.println("VE.Direct frame dropped (JSON overflow)");
+		Serial.println("VE.Direct frame dropped (JSON overflow)");
 		resetWorkingFrame();
 		return;
 	}
