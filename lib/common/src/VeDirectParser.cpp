@@ -60,10 +60,7 @@ void VeDirectParser::handleLine(const String &line) {
 	if (tabIndex <= 0) return;
 
 	String key = line.substring(0, tabIndex);
-	if (key == "Checksum") {
-		// Checksum byte is validated as soon as it arrives in process().
-		return;
-	}
+	if (key == "Checksum") return; // Checksum byte is validated as soon as it arrives in process().
 
 	String value = line.substring(tabIndex + 1);
 	_workingFrameDoc["fields"][key] = value;
@@ -79,16 +76,12 @@ void VeDirectParser::process(Stream &serialStream) {
 		if (!_frameActive) {
 			if (c == '\r') {
 				_sawIdleCarriageReturn = true;
-				continue;
-			}
-
-			if (c == '\n' && _sawIdleCarriageReturn) {
+			} else if (c == '\n' && _sawIdleCarriageReturn) {
 				startWorkingFrame();
 				_sawIdleCarriageReturn = false;
-				continue;
+			} else {
+				_sawIdleCarriageReturn = false;
 			}
-
-			_sawIdleCarriageReturn = false;
 			continue;
 		}
 
@@ -100,18 +93,12 @@ void VeDirectParser::process(Stream &serialStream) {
 		if (_lineBuffer == "Checksum\t") {
 			finalizeWorkingFrame();
 			_lineBuffer = "";
-			continue;
-		}
-
-		if (c == '\r') continue;
-
-		if (c == '\n') {
+		} else if (c == '\n') {
 			handleLine(_lineBuffer);
 			_lineBuffer = "";
-			continue;
+		} else if (c != '\r') {
+			_lineBuffer += c;
 		}
-
-		_lineBuffer += c;
 	}
 }
 
