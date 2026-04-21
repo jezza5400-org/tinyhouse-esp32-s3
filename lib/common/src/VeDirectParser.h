@@ -35,14 +35,19 @@ public:
 	void markFrameConsumed();
 
 private:
+	enum class ParseState : uint8_t {
+		Idle,
+		SawIdleCarriageReturn,
+		InFrame,
+	};
+
 	/*!
-	 * @brief  Clear the in-progress frame and return to idle state.
+	 * @brief  Clear or initialize the in-progress frame and update parser state.
+	 * @param  startFrame
+	 *         true to enter frame mode and seed checksum with CR+LF,
+	 *         false to return to idle with checksum reset.
 	 */
-	void resetWorkingFrame();
-	/*!
-	 * @brief  Start buffering a new VE.Direct frame.
-	 */
-	void startWorkingFrame();
+	void resetWorkingFrame(bool startFrame = false);
 	/*!
 	 * @brief  Validate checksum, publish the completed frame, and reset state.
 	 */
@@ -57,8 +62,7 @@ private:
 	JsonDocument _workingFrameDoc;
 	JsonDocument _latestFrameDoc;
 	String _lineBuffer;
-	bool _frameActive = false;
+	ParseState _state = ParseState::Idle;
 	uint8_t _checksum = 0;
-	bool _sawIdleCarriageReturn = false;
 	bool _hasFreshFrame = false;
 };

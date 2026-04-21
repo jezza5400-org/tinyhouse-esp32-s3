@@ -1,36 +1,25 @@
 #include "VeDirectParser.h"
 
 void VeDirectParser::begin() {
-	_workingFrameDoc.clear();
+	resetWorkingFrame();
 	_latestFrameDoc.clear();
-	_lineBuffer = "";
-	_frameActive = false;
-	_checksum = 0;
-	_sawIdleCarriageReturn = false;
 	_hasFreshFrame = false;
 }
 
-void VeDirectParser::resetWorkingFrame() {
+void VeDirectParser::resetWorkingFrame(bool startFrame) {
 	_workingFrameDoc.clear();
 	_lineBuffer = "";
-	_frameActive = false;
+	if (startFrame) {
+		_workingFrameDoc["fields"].to<JsonObject>();
+		_state = ParseState::InFrame;
+		_checksum = static_cast<uint8_t>('\r' + '\n');
+		return;
+	}
+	_state = ParseState::Idle;
 	_checksum = 0;
-	_sawIdleCarriageReturn = false;
-}
-
-void VeDirectParser::startWorkingFrame() {
-	_workingFrameDoc.clear();
-	_workingFrameDoc["fields"].to<JsonObject>();
-	_lineBuffer = "";
-	_frameActive = true;
-	_checksum = static_cast<uint8_t>(static_cast<uint8_t>('\r') + static_cast<uint8_t>('\n'));
 }
 
 void VeDirectParser::finalizeWorkingFrame() {
-	// VE.Direct frames are valid when the 8-bit sum of all bytes is 0.
-	// `_checksum` stores that running 8-bit sum. Because the variable is `uint8_t`,
-	// each assignment keeps only the low 8 bits, which is equivalent to modulo 256.
-	// So `_checksum != 0` means the frame sum is non-zero in mod-256 arithmetic.
 	if (_checksum != 0) {
 		Serial.println("VE.Direct frame dropped (checksum mismatch)");
 		resetWorkingFrame();
@@ -73,14 +62,13 @@ void VeDirectParser::process(Stream &serialStream) {
 		uint8_t incoming = static_cast<uint8_t>(rawIncoming);
 		char c = static_cast<char>(incoming);
 
-		if (!_frameActive) {
+		if (_state != ParseState::InFrame) {
 			if (c == '\r') {
-				_sawIdleCarriageReturn = true;
-			} else if (c == '\n' && _sawIdleCarriageReturn) {
-				startWorkingFrame();
-				_sawIdleCarriageReturn = false;
+				_state = ParseState::SawIdleCarriageReturn;
+			} else if (c == '\n' && _state == ParseState::SawIdleCarriageReturn) {
+				resetWorkingFrame(true);
 			} else {
-				_sawIdleCarriageReturn = false;
+				_state = ParseState::Idle;
 			}
 			continue;
 		}
