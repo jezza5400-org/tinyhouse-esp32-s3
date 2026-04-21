@@ -37,17 +37,18 @@ public:
 private:
 	enum class ParseState : uint8_t {
 		Idle,
-		SawIdleCarriageReturn,
+		SawCR,
 		InFrame,
 	};
 
 	/*!
 	 * @brief  Clear or initialize the in-progress frame and update parser state.
-	 * @param  startFrame
-	 *         true to enter frame mode and seed checksum with CR+LF,
-	 *         false to return to idle with checksum reset.
 	 */
-	void resetWorkingFrame(bool startFrame = false);
+	void resetWorkingFrame();
+	/*!
+	 * @brief  Clear or initialize the in-progress frame and update parser state.
+	 */
+	void startFrame();
 	/*!
 	 * @brief  Validate checksum, publish the completed frame, and reset state.
 	 */

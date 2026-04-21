@@ -6,17 +6,18 @@ void VeDirectParser::begin() {
 	_hasFreshFrame = false;
 }
 
-void VeDirectParser::resetWorkingFrame(bool startFrame) {
+void VeDirectParser::resetWorkingFrame() {
 	_workingFrameDoc.clear();
 	_lineBuffer = "";
-	if (startFrame) {
-		_workingFrameDoc["fields"].to<JsonObject>();
-		_state = ParseState::InFrame;
-		_checksum = static_cast<uint8_t>('\r' + '\n');
-		return;
-	}
-	_state = ParseState::Idle;
 	_checksum = 0;
+	_state = ParseState::Idle;
+}
+
+void VeDirectParser::startFrame() {
+	resetWorkingFrame();
+	_workingFrameDoc["fields"].to<JsonObject>();
+	_checksum = static_cast<uint8_t>('\r' + '\n');
+	_state = ParseState::InFrame;
 }
 
 void VeDirectParser::finalizeWorkingFrame() {
@@ -64,18 +65,16 @@ void VeDirectParser::process(Stream &serialStream) {
 
 		if (_state != ParseState::InFrame) {
 			if (c == '\r') {
-				_state = ParseState::SawIdleCarriageReturn;
-			} else if (c == '\n' && _state == ParseState::SawIdleCarriageReturn) {
-				resetWorkingFrame(true);
+				_state = ParseState::SawCR;
+			} else if (c == '\n' && _state == ParseState::SawCR) {
+				startFrame();
 			} else {
 				_state = ParseState::Idle;
 			}
 			continue;
 		}
 
-		// `_checksum + incoming` is evaluated using integer promotion (as `int`),
-		// then cast back to `uint8_t`. That cast keeps the low 8 bits, so the result
-		// is exactly the running sum modulo 256.
+		// `_checksum + incoming` is evaluated then cast which keeps the low 8 bits, so the result is the modulo 256.
 		_checksum = static_cast<uint8_t>(_checksum + incoming);
 
 		if (_lineBuffer == "Checksum\t") {
