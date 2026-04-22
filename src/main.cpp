@@ -12,20 +12,24 @@
 #include <WiFi.h>
 #endif
 
+#include "secrets.h"
+
 int status = WL_IDLE_STATUS;
 
-constexpr const char *WIFI_SSID = "WiFi-SSID";
-constexpr const char *WIFI_PASSWORD = "WiFi-Password";
-constexpr const char *DWEET_HOST = "10.245.141.2";
+constexpr char DWEET_HOST[] = "10.42.110.2";
 constexpr uint16_t DWEET_PORT = 8080;
-constexpr const char *DWEET_THING = "thing-name";
 constexpr uint8_t ONEWIRE_PIN = 4;
+constexpr uint8_t RELAY_PIN = 2;
 constexpr uint8_t DHT_PIN = 19;
+constexpr uint8_t T_ON = 20;
+constexpr uint8_t T_OFF = 24;
+constexpr uint16_t BATT_CUTOFF = 11800;
+constexpr unsigned long SENSOR_FAILSAFE_OFF_MS = 5000;
 
 WiFiSender jsonSender(DWEET_HOST, DWEET_PORT, DWEET_THING);
 VeDirectParser veParser;
-OneWireCommon oneWireTelemetry(ONEWIRE_PIN);
-DhtCommon dhtTelemetry(DHT_PIN, DHT22, 2500);
+OneWireCommon oneWireCommon(ONEWIRE_PIN);
+DhtCommon dhtCommon(DHT_PIN, DHT22, 2500);
 
 void connectWifi() {
 	while (WiFi.status() != WL_CONNECTED) {
@@ -60,8 +64,8 @@ bool publishCombinedPayload() {
 
 	JsonObject victron = payload["victron"].to<JsonObject>();
 	veParser.copyFieldsTo(victron);
-	oneWireTelemetry.appendPayload(payload);
-	dhtTelemetry.appendPayload(payload);
+	oneWireCommon.appendPayload(payload);
+	dhtCommon.appendPayload(payload);
 
 	if (combinedDoc.overflowed()) {
 		Serial.println("Combined payload dropped (JSON overflow)");
@@ -75,24 +79,58 @@ bool publishCombinedPayload() {
 	return jsonSender.send(combinedDoc);
 }
 
+void controlHeater() {
+	static unsigned long sensorLostAtMs = 0;
+
+	const bool sensorConnected = oneWireCommon.isConnected();
+	const float waterTempC = oneWireCommon.getTempC();
+	const bool powerOk = veParser.getBattVoltage() > BATT_CUTOFF || veParser.getPanelVoltage() > BATT_CUTOFF;
+	const bool heaterOn = digitalRead(RELAY_PIN) == HIGH;
+
+	if (!sensorConnected) {
+		if (sensorLostAtMs == 0) sensorLostAtMs = millis();
+		if (millis() - sensorLostAtMs >= SENSOR_FAILSAFE_OFF_MS) digitalWrite(RELAY_PIN, LOW);
+		return;
+	}
+
+	sensorLostAtMs = 0;
+
+	if (!powerOk) {
+		digitalWrite(RELAY_PIN, LOW);
+		return;
+	}
+
+	if (!heaterOn && waterTempC <= T_ON) {
+		digitalWrite(RELAY_PIN, HIGH);
+	} else if (heaterOn && waterTempC >= T_OFF) {
+		digitalWrite(RELAY_PIN, LOW);
+	}
+}
+
 void setup() {
 	Serial.begin(9600);
 	Serial1.begin(19200);
-	while (!Serial);
-	oneWireTelemetry.begin();
+	//while (!Serial) yield();
+	oneWireCommon.begin();
 
 #if defined(ARDUINO_ARCH_RP2040)
-	dhtTelemetry.begin();
+	dhtCommon.begin();
 #endif
 
 	veParser.begin();
+	pinMode(RELAY_PIN, OUTPUT);
+	digitalWrite(RELAY_PIN, LOW);
 	connectWifi();
 	printWifiStatus();
 }
 
 void loop() {
-	oneWireTelemetry.poll();
-	dhtTelemetry.poll();
+	static unsigned long lastPublish = 0;
+
+	oneWireCommon.poll(true);
+	dhtCommon.poll();
+	veParser.process(Serial1);
+	controlHeater();
 
 	if (WiFi.status() != WL_CONNECTED) {
 		Serial.println("Wi-Fi disconnected, reconnecting");
@@ -100,12 +138,14 @@ void loop() {
 		printWifiStatus();
 	}
 
-	veParser.process(Serial1);
-
 	if (veParser.hasFreshFrame()) {
-		if (!publishCombinedPayload()) Serial.println("Failed to send combined telemetry payload");
+		if (!oneWireCommon.isConnected() || !dhtCommon.isConnected()) {
+			Serial.println("Skipping publish: one or more sensors disconnected");
+		} else if (millis() - lastPublish >= 10000) {
+			if (!publishCombinedPayload()) Serial.println("Failed to send combined payload");
+			lastPublish = millis();
+		}
+
 		veParser.markFrameConsumed();
 	}
-
-	yield();
 }

@@ -4,24 +4,20 @@
 
 OneWire oneWire(4);
 DallasTemperature sensors(&oneWire);
+unsigned long start;
 
 void setup(void) {
 	Serial.begin(9600);
-	while (!Serial);
+	while (!Serial) yield();
 	Serial.println("Dallas Temperature IC Control Library Demo");
 	sensors.begin();
+	sensors.setWaitForConversion(true);
+	Serial.println("Current Resolution: " + String(sensors.getResolution()) + " bits");
 }
 
 void loop(void) {
-	// call sensors.requestTemperatures() to issue a global temperature
-	// request to all devices on the bus
-	Serial.print(" Requesting temperatures...");
-	sensors.requestTemperatures(); // Send the command to get temperatures
-	Serial.println("DONE");
-
-	Serial.print("Temperature is: ");
-	Serial.print(sensors.getTempCByIndex(0)); // Why "byIndex"?
-	// You can have more than one IC on the same bus.
-	// 0 refers to the first IC on the wire
-	delay(1000);
+	start = millis();
+	Serial.print("Requesting temperatures...");
+	sensors.requestTemperatures();
+	Serial.println("DONE\nTemperature is: " + String(sensors.getTempCByIndex(0)) + ", Found in: " + String((millis() - start)));
 }

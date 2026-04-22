@@ -50,10 +50,16 @@ void VeDirectParser::handleLine(const String &line) {
 	if (tabIndex <= 0) return;
 
 	String key = line.substring(0, tabIndex);
-	if (key == "Checksum") return; // Checksum byte is validated as soon as it arrives in process().
+	if (key == "Checksum") return;
 
 	String value = line.substring(tabIndex + 1);
 	_workingFrameDoc["fields"][key] = value;
+
+	if (key == "V") {
+		_battVoltage = value.toInt();
+	} else if (key == "VPV") {
+		_panelVoltage = value.toInt();
+	}
 }
 
 void VeDirectParser::process(Stream &serialStream) {
@@ -101,4 +107,12 @@ void VeDirectParser::copyFieldsTo(JsonObject target) const {
 
 void VeDirectParser::markFrameConsumed() {
 	_hasFreshFrame = false;
+}
+
+uint16_t VeDirectParser::getBattVoltage() const {
+	return _battVoltage;
+}
+
+uint16_t VeDirectParser::getPanelVoltage() const {
+	return _panelVoltage;
 }

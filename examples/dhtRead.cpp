@@ -53,7 +53,7 @@ const char *dhtErrorToString(uint8_t errorCode) {
 
 void setup() {
 	Serial.begin(9600);
-	while (!Serial);
+	while (!Serial) yield();
 	Serial.print("DHT pin: ");
 	Serial.println(DHT_PIN);
 #if DHT_SENSOR_MODEL == DHT22

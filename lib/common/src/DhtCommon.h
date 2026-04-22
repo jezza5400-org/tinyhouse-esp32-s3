@@ -12,36 +12,40 @@
 #endif
 
 /*!
- * @brief  Cross-platform DHT temperature and humidity helper.
+ * @brief Cross-platform DHT temperature and humidity helper.
  */
 class DhtCommon {
 public:
 	/*!
-	 * @brief  Create a DHT sensor helper.
-	 * @param  pin
+	 * @brief Create a DHT sensor helper.
+	 * @param pin
 	 *         GPIO pin connected to the DHT data line.
-	 * @param  sensorModel
+	 * @param sensorModel
 	 *         DHT sensor model constant (for example DHT22).
-	 * @param  readIntervalMs
+	 * @param readIntervalMs
 	 *         Minimum interval between sensor reads in milliseconds.
 	 */
 	DhtCommon(uint8_t pin, uint8_t sensorModel = DHT22, unsigned long readIntervalMs = 2500);
 #if defined(ARDUINO_ARCH_RP2040)
 	/*!
-	 * @brief  Initialize the RP2040 DHT driver.
+	 * @brief Initialize the RP2040 DHT driver.
 	 */
 	void begin();
 #endif
 	/*!
-	 * @brief  Read sensor data when the configured interval has elapsed.
+	 * @brief Read sensor data when the configured interval has elapsed.
 	 */
 	void poll();
 	/*!
-	 * @brief  Append cached DHT values into a JSON payload.
-	 * @param  payload
+	 * @brief Append cached DHT values into a JSON payload.
+	 * @param payload
 	 *         JSON object that receives the DHT22 sub-object fields.
 	 */
 	void appendPayload(JsonObject payload) const;
+	/*!
+	 * @brief Report whether the sensor is currently connected.
+	 */
+	bool isConnected() const;
 
 private:
 	uint8_t _pin;

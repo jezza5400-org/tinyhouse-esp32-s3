@@ -10,23 +10,23 @@
 #endif
 
 /*!
- * @brief  HTTPS client helper for posting JSON payloads over WiFi.
+ * @brief HTTPS client helper for posting JSON payloads over WiFi.
  */
 class WiFiSender {
 public:
 	/*!
-	 * @brief  Create an HTTPS sender for posting sensor data.
-	 * @param  host
+	 * @brief Create an HTTPS sender for posting sensor data.
+	 * @param host
 	 *         Destination host name or IP.
-	 * @param  port
+	 * @param port
 	 *         Destination TCP port.
-	 * @param  thing
+	 * @param thing
 	 *         Dweet thing name used in the request path.
 	 */
 	WiFiSender(const char *host, uint16_t port, const char *thing);
 	/*!
-	 * @brief  Send a JSON document to the configured HTTPS endpoint.
-	 * @param  payloadDoc
+	 * @brief Send a JSON document to the configured HTTPS endpoint.
+	 * @param payloadDoc
 	 *         JSON document serialized as the POST body.
 	 * @return true when a TCP connection and request write complete successfully.
 	 */
