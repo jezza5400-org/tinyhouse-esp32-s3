@@ -31,54 +31,6 @@ VeDirectParser veParser;
 OneWireCommon oneWireCommon(ONEWIRE_PIN);
 DhtCommon dhtCommon(DHT_PIN, DHT22, 2500);
 
-void connectWifi() {
-	while (WiFi.status() != WL_CONNECTED) {
-		Serial.println(String("Attempting to connect to network ") + WIFI_SSID);
-		status = WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-		unsigned long waitStart = millis();
-		while (WiFi.status() != WL_CONNECTED && (millis() - waitStart) < 10000) delay(100);
-
-		if (WiFi.status() == WL_CONNECTED) break;
-
-#if defined(ARDUINO_ARCH_RP2040)
-		WiFi.disconnect();
-		WiFi.end();
-#elif defined(ARDUINO_ARCH_ESP32)
-		WiFi.disconnect(true, false);
-		delay(100);
-		WiFi.mode(WIFI_STA);
-#endif
-	}
-}
-
-void printWifiStatus() {
-	Serial.println(String("SSID: ") + WiFi.SSID());
-	Serial.println(String("IP Address: ") + WiFi.localIP().toString());
-	Serial.println("Signal strength (RSSI): " + String(WiFi.RSSI()) + " dBm");
-}
-
-bool publishCombinedPayload() {
-	JsonDocument combinedDoc;
-	JsonObject payload = combinedDoc.to<JsonObject>();
-
-	JsonObject victron = payload["victron"].to<JsonObject>();
-	veParser.copyFieldsTo(victron);
-	oneWireCommon.appendPayload(payload);
-	dhtCommon.appendPayload(payload);
-
-	if (combinedDoc.overflowed()) {
-		Serial.println("Combined payload dropped (JSON overflow)");
-		return false;
-	}
-
-	Serial.println("Combined JSON payload:");
-	serializeJson(combinedDoc, Serial);
-	Serial.println();
-
-	return jsonSender.send(combinedDoc);
-}
-
 void controlHeater() {
 	static unsigned long sensorLostAtMs = 0;
 
@@ -107,10 +59,62 @@ void controlHeater() {
 	}
 }
 
+void printWifiStatus() {
+	Serial.println(String("SSID: ") + WiFi.SSID());
+	Serial.println(String("IP Address: ") + WiFi.localIP().toString());
+	Serial.println("Signal strength (RSSI): " + String(WiFi.RSSI()) + " dBm");
+}
+
+void connectWifi() {
+	while (WiFi.status() != WL_CONNECTED) {
+		Serial.println(String("Attempting to connect to network ") + WIFI_SSID);
+		status = WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+		unsigned long waitStart = millis();
+		while (WiFi.status() != WL_CONNECTED && (millis() - waitStart) < 10000) delay(100);
+
+		if (WiFi.status() == WL_CONNECTED) break;
+
+#if defined(ARDUINO_ARCH_RP2040)
+		WiFi.disconnect();
+		WiFi.end();
+#elif defined(ARDUINO_ARCH_ESP32)
+		WiFi.disconnect(true, false);
+		delay(100);
+		WiFi.mode(WIFI_STA);
+#endif
+
+		oneWireCommon.poll(true);
+		veParser.process(Serial1);
+		controlHeater();
+	}
+}
+
+bool publishCombinedPayload() {
+	JsonDocument combinedDoc;
+	JsonObject payload = combinedDoc.to<JsonObject>();
+
+	JsonObject victron = payload["victron"].to<JsonObject>();
+	veParser.copyFieldsTo(victron);
+	oneWireCommon.appendPayload(payload);
+	dhtCommon.appendPayload(payload);
+
+	if (combinedDoc.overflowed()) {
+		Serial.println("Combined payload dropped (JSON overflow)");
+		return false;
+	}
+
+	Serial.println("Combined JSON payload:");
+	serializeJson(combinedDoc, Serial);
+	Serial.println();
+
+	return jsonSender.send(combinedDoc);
+}
+
 void setup() {
 	Serial.begin(9600);
 	Serial1.begin(19200);
-	//while (!Serial) yield();
+	// while (!Serial) yield();
 	oneWireCommon.begin();
 
 #if defined(ARDUINO_ARCH_RP2040)
@@ -126,19 +130,12 @@ void setup() {
 
 void loop() {
 	static unsigned long lastPublish = 0;
-
 	oneWireCommon.poll(true);
 	dhtCommon.poll();
 	veParser.process(Serial1);
 	controlHeater();
 
-	if (WiFi.status() != WL_CONNECTED) {
-		Serial.println("Wi-Fi disconnected, reconnecting");
-		connectWifi();
-		printWifiStatus();
-	}
-
-	if (veParser.hasFreshFrame()) {
+	if (WiFi.status() == WL_CONNECTED && veParser.hasFreshFrame()) {
 		if (!oneWireCommon.isConnected() || !dhtCommon.isConnected()) {
 			Serial.println("Skipping publish: one or more sensors disconnected");
 		} else if (millis() - lastPublish >= 10000) {
@@ -147,5 +144,7 @@ void loop() {
 		}
 
 		veParser.markFrameConsumed();
+	} else if (WiFi.status() != WL_CONNECTED) {
+		connectWifi();
 	}
 }
