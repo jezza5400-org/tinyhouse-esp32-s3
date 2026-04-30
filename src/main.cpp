@@ -24,7 +24,7 @@ constexpr uint8_t DHT_PIN = 19;
 constexpr uint8_t T_ON = 20;
 constexpr uint8_t T_OFF = 24;
 constexpr uint16_t BATT_CUTOFF = 11800;
-constexpr unsigned long SENSOR_FAILSAFE_OFF_MS = 5000;
+constexpr uint16_t SENSOR_FAILSAFE_OFF_MS = 5000;
 
 WiFiSender jsonSender(DWEET_HOST, DWEET_PORT, DWEET_THING);
 VeDirectParser veParser;
