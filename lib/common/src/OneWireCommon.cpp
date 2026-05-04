@@ -11,27 +11,34 @@ void OneWireCommon::begin() {
 	_sensors.requestTemperatures();
 }
 
-void OneWireCommon::poll(bool blocking) {
+void OneWireCommon::pollBlocking() {
 	_sensors.requestTemperatures();
-	if (blocking) {
-		unsigned long start = millis();
-		float temp = DEVICE_DISCONNECTED_C;
-		while ((millis() - start) < 3000) {
-			if (_sensors.isConversionComplete()) {
-				temp = _sensors.getTempC(_address);
-				if (temp != DEVICE_DISCONNECTED_C) break;
-				_sensors.requestTemperatures();
-			}
-			yield();
+	unsigned long start = millis();
+	float temp = DEVICE_DISCONNECTED_C;
+	while ((millis() - start) < 3000) {
+		if (_sensors.isConversionComplete()) {
+			temp = _sensors.getTempC(_address);
+			if (temp != DEVICE_DISCONNECTED_C) break;
+			_sensors.requestTemperatures();
 		}
-		_temperatureC = temp;
-	} else if (_sensors.isConversionComplete()) {
+		yield();
+	}
+	if (temp == DEVICE_DISCONNECTED_C) Serial.println("OneWire device disconnected.");
+	_temperatureC = temp;
+}
+
+void OneWireCommon::pollAsync() {
+	if (_conversionInProgress && _sensors.isConversionComplete()) {
+		_conversionInProgress = false;
 		if (!_addressKnown) _addressKnown = _sensors.getAddress(_address, 0);
 		_temperatureC = _addressKnown ? _sensors.getTempC(_address) : DEVICE_DISCONNECTED_C;
 		if (_temperatureC == DEVICE_DISCONNECTED_C) {
 			if (_addressKnown && !_sensors.isConnected(_address)) _addressKnown = false;
 			Serial.println("OneWire device disconnected.");
 		}
+	} else if (!_conversionInProgress) {
+		_sensors.requestTemperatures();
+		_conversionInProgress = true;
 	}
 }
 

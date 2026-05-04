@@ -21,11 +21,13 @@ public:
 	 */
 	void begin();
 	/*!
-	 * @brief Update cached temperature data from the OneWire sensor.
-	 * @param blocking
-	 *         true to wait for conversion completion, false to return early if conversion is still in progress.
+	 * @brief Update cached temperature data from the OneWire sensor. Waits for conversion to completion.
 	 */
-	void poll(bool blocking = false);
+	void pollBlocking();
+	/*!
+	 * @brief Update cached temperature data from the OneWire sensor. Returns early if conversion is still in progress.
+	 */
+	void pollAsync();
 	/*!
 	 * @brief Append cached OneWire values into a JSON payload.
 	 * @param payload
@@ -45,6 +47,7 @@ private:
 	OneWire _bus;
 	DallasTemperature _sensors;
 	DeviceAddress _address;
+	bool _conversionInProgress = false;
 	bool _addressKnown = false;
 	float _temperatureC = 0.0f;
 };

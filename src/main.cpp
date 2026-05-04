@@ -84,7 +84,7 @@ void connectWifi() {
 		WiFi.mode(WIFI_STA);
 #endif
 
-		oneWireCommon.poll(true);
+		oneWireCommon.pollBlocking();
 		veParser.process(Serial1);
 		controlHeater();
 	}
@@ -130,7 +130,7 @@ void setup() {
 
 void loop() {
 	static unsigned long lastPublish = 0;
-	oneWireCommon.poll(true);
+	oneWireCommon.pollBlocking();
 	dhtCommon.poll();
 	veParser.process(Serial1);
 	controlHeater();
