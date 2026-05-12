@@ -14,8 +14,6 @@
 
 #include "secrets.h"
 
-int status = WL_IDLE_STATUS;
-
 constexpr char DWEET_HOST[] = "10.42.110.2";
 constexpr uint16_t DWEET_PORT = 8080;
 constexpr uint8_t ONEWIRE_PIN = 4;
@@ -68,7 +66,7 @@ void printWifiStatus() {
 void connectWifi() {
 	while (WiFi.status() != WL_CONNECTED) {
 		Serial.println(String("Attempting to connect to network ") + WIFI_SSID);
-		status = WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+		WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
 		unsigned long waitStart = millis();
 		while (WiFi.status() != WL_CONNECTED && (millis() - waitStart) < 10000) delay(100);
