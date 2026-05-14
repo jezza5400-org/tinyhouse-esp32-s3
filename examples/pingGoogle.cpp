@@ -44,9 +44,9 @@ void loop() {
 		int httpCode = http.GET();
 
 		if (httpCode > 0) {
-			Serial.printf("Google reachable ✔ (HTTP %d)\n", httpCode);
+			Serial.printf("Google reachable (HTTP %d)\n", httpCode);
 		} else {
-			Serial.printf("Google unreachable ❌ (%s)\n", http.errorToString(httpCode).c_str());
+			Serial.printf("Google unreachable (%s)\n", http.errorToString(httpCode).c_str());
 		}
 
 		http.end();
@@ -54,5 +54,5 @@ void loop() {
 		Serial.println("WiFi disconnected!");
 	}
 
-	delay(2000); // ping every 2 seconds
+	delay(2000);
 }

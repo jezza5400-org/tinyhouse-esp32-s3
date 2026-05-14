@@ -15,29 +15,29 @@ For example, see the structure of the following example libraries `Foo` and `Bar
 |  |  |--docs
 |  |  |--examples
 |  |  |--src
-|  |     |- Bar.c
+|  |     |- Bar.cpp
 |  |     |- Bar.h
 |  |  |- library.json (optional. for custom build options, etc) https://docs.platformio.org/page/librarymanager/config.html
 |  |
 |  |--Foo
-|  |  |- Foo.c
+|  |  |- Foo.cpp
 |  |  |- Foo.h
 |  |
 |  |- README --> THIS FILE
 |
 |- platformio.ini
 |--src
-   |- main.c
+   |- main.cpp
 ```
 
-Example contents of `src/main.c` using Foo and Bar:
+Example contents of `src/main.cpp` using Foo and Bar:
 
-```c
+```cpp
 #include <Foo.h>
 #include <Bar.h>
 
 int main (void) {
-  …
+    // Mainloop
 }
 ```
 

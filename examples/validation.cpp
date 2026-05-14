@@ -9,9 +9,6 @@ void setup() {
 
 	delay(5000);
 
-	// ESP32‑S3 USB CDC does NOT behave like UART
-	// This loop prevents hanging forever
-	unsigned long start = millis();
 	while (!Serial) yield();
 
 	Serial.println("\n=== ESP32‑S3 Hardware Validation ===");
@@ -49,18 +46,20 @@ void setup() {
 	Serial.println("\n=== Validation Results ===");
 
 	if (flash_size == 16 * 1024 * 1024) {
-		Serial.println("✔ Flash size matches N16R8 (16MB)");
+		Serial.println("Flash size matches N16R8 (16MB)");
 	} else {
-		Serial.println("❌ Flash size mismatch! Check board JSON.");
+		Serial.println("Flash size mismatch! Check board JSON.");
 	}
 
 	if (psram_size == 8 * 1024 * 1024) {
-		Serial.println("✔ PSRAM size matches N16R8 (8MB)");
+		Serial.println("PSRAM size matches N16R8 (8MB)");
 	} else {
-		Serial.println("❌ PSRAM size mismatch! Check board JSON.");
+		Serial.println("PSRAM size mismatch! Check board JSON.");
 	}
 
 	Serial.println("\nValidation complete.");
 }
 
-void loop() {}
+void loop() {
+	vTaskDelay(portMAX_DELAY);
+}

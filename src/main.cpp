@@ -1,24 +1,19 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <WiFi.h>
 
 #include <DhtCommon.h>
 #include <OneWireCommon.h>
 #include <VeDirectParser.h>
 #include <WiFiSender.h>
 
-#if defined(ARDUINO_ARCH_RP2040)
-#include <WiFiNINA.h>
-#elif defined(ARDUINO_ARCH_ESP32)
-#include <WiFi.h>
-#endif
-
 #include "secrets.h"
 
 constexpr char DWEET_HOST[] = "10.42.110.2";
 constexpr uint16_t DWEET_PORT = 8080;
-constexpr uint8_t ONEWIRE_PIN = 4;
-constexpr uint8_t RELAY_PIN = 2;
-constexpr uint8_t DHT_PIN = 19;
+constexpr uint8_t RELAY_PIN = 7;
+constexpr uint8_t DHT_PIN = 15;
+constexpr uint8_t ONEWIRE_PIN = 16;
 constexpr uint8_t T_ON = 20;
 constexpr uint8_t T_OFF = 24;
 constexpr uint16_t BATT_CUTOFF = 11800;
@@ -73,14 +68,9 @@ void connectWifi() {
 
 		if (WiFi.status() == WL_CONNECTED) break;
 
-#if defined(ARDUINO_ARCH_RP2040)
-		WiFi.disconnect();
-		WiFi.end();
-#elif defined(ARDUINO_ARCH_ESP32)
 		WiFi.disconnect(true, false);
 		delay(100);
 		WiFi.mode(WIFI_STA);
-#endif
 
 		oneWireCommon.pollBlocking();
 		veParser.process(Serial1);
@@ -114,10 +104,6 @@ void setup() {
 	Serial1.begin(19200);
 	// while (!Serial) yield();
 	oneWireCommon.begin();
-
-#if defined(ARDUINO_ARCH_RP2040)
-	dhtCommon.begin();
-#endif
 
 	veParser.begin();
 	pinMode(RELAY_PIN, OUTPUT);

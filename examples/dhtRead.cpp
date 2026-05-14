@@ -1,30 +1,11 @@
-/*
-   Cross-target DHT example:
-   - ESP32-S3: htmltiger dhtESP32-rmt (RMT/non-blocking)
-   - RP2040: standard DHT.h
-*/
-
 #include <Arduino.h>
-
-#if defined(ARDUINO_ARCH_ESP32)
 #include <dhtESP32-rmt.h>
-#elif defined(ARDUINO_ARCH_RP2040)
-#include <DHT.h>
-#else
-#error "This example supports ARDUINO_ARCH_ESP32 and ARDUINO_ARCH_RP2040 only."
-#endif
 
-constexpr uint8_t DHT_PIN = 19;
-constexpr unsigned long DHT_READ_INTERVAL_MS = 2000;
-
-// Set to DHT11 if your sensor is DHT11.
 #define DHT_SENSOR_MODEL DHT22
 
-#if defined(ARDUINO_ARCH_RP2040)
-DHT dht(DHT_PIN, DHT_SENSOR_MODEL);
-#endif
+constexpr uint8_t DHT_PIN = 8;
+constexpr unsigned long DHT_READ_INTERVAL_MS = 2000;
 
-#if defined(ARDUINO_ARCH_ESP32)
 const char *dhtErrorToString(uint8_t errorCode) {
 	switch (errorCode) {
 		case 0:
@@ -49,24 +30,11 @@ const char *dhtErrorToString(uint8_t errorCode) {
 			return "UNKNOWN";
 	}
 }
-#endif
 
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	while (!Serial) yield();
-	Serial.print("DHT pin: ");
-	Serial.println(DHT_PIN);
-#if DHT_SENSOR_MODEL == DHT22
-	Serial.println("DHT model: DHT22/AM2302");
-#elif DHT_SENSOR_MODEL == DHT11
-	Serial.println("DHT model: DHT11");
-#else
-	Serial.println("DHT model: custom");
-#endif
-
-#if defined(ARDUINO_ARCH_RP2040)
-	dht.begin();
-#endif
+	Serial.println("DHT pin: " + String(DHT_PIN) + "\nDHT Test");
 }
 
 void loop() {
@@ -77,28 +45,11 @@ void loop() {
 	float humidity = NAN;
 	float temperatureC = NAN;
 
-#if defined(ARDUINO_ARCH_ESP32)
 	uint8_t errorCode = read_dht(temperatureC, humidity, DHT_PIN, DHT_SENSOR_MODEL);
 	if (errorCode != 0) {
-		Serial.print("DHT read error ");
-		Serial.print(errorCode);
-		Serial.print(" (");
-		Serial.print(dhtErrorToString(errorCode));
-		Serial.println(")");
+		Serial.println("DHT read error: " + String(errorCode) + " (" + dhtErrorToString(errorCode) + ")");
 		return;
 	}
-#elif defined(ARDUINO_ARCH_RP2040)
-	humidity = dht.readHumidity();
-	temperatureC = dht.readTemperature();
-	if (isnan(humidity) || isnan(temperatureC)) {
-		Serial.println("DHT read failed");
-		return;
-	}
-#endif
 
-	Serial.print("Humidity: ");
-	Serial.print(humidity);
-	Serial.print(" %, Temp: ");
-	Serial.print(temperatureC);
-	Serial.println(" Celsius");
+	Serial.println("Humidity: " + String(humidity) + " %, Temp: " + String(temperatureC) + " Celsius");
 }

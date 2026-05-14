@@ -2,12 +2,12 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-OneWire oneWire(4);
+OneWire oneWire(17);
 DallasTemperature sensors(&oneWire);
 unsigned long start;
 
 void setup(void) {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	while (!Serial) yield();
 	Serial.println("Dallas Temperature IC Control Library Demo");
 	sensors.begin();

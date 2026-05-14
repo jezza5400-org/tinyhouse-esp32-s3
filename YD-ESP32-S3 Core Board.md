@@ -2,9 +2,9 @@
 
 ## Introduction
 
-YD-ESP32-S3 core board is designed by VCC-GND Studio. If needed, you can visit https://www.vcc-gnd.com to purchase one. This board uses the ESP32-S3 chip and is suitable for both IoT application prototypes and production applications. It features two USB connectors: a dedicated USB-to-serial port (CH343P by WCH) and the native ESP32-S3 USB port.
+YD-ESP32-S3 core board is designed by VCC-GND Studio. If needed, you can visit [https://www.vcc-gnd.com](https://www.vcc-gnd.com) to purchase one. This board uses the ESP32-S3 chip and is suitable for both IoT application prototypes and production applications. It features two USB connectors: a dedicated USB-to-serial port (CH343P by WCH) and the native ESP32-S3 USB port.
 
-![](https://github.com/vcc-gnd/YD-ESP32-S3/raw/main/IMG/img1.PNG)
+![Top and bottom views](https://github.com/vcc-gnd/YD-ESP32-S3/blob/main/IMG/img1.PNG?raw=true)
 
 This guide will help you get started with the YD-ESP32-S3 quickly, and provides detailed information about this development board.
 
@@ -12,7 +12,7 @@ YD-ESP32-S3 is an entry-level development board based on the Wi-Fi + Bluetooth®
 
 Most of the module pins are broken out to headers on both sides of the board, so developers can easily connect multiple peripherals with jumper wires as needed, and the board can also be plugged into a breadboard for use.
 
-![img](https://github.com/vcc-gnd/YD-ESP32-S3/raw/main/IMG/YD-ESP32-S3.PNG)
+![img](https://github.com/vcc-gnd/YD-ESP32-S3/blob/main/IMG/YD-ESP32-S3.PNG?raw=true)
 
 1. This is a minimal ESP32-S3 core board, using Espressif's ESP32-S3 module.
 2. Dedicated LDO circuit for wireless function, eliminating concerns about insufficient power supply.
@@ -22,7 +22,7 @@ Most of the module pins are broken out to headers on both sides of the board, so
 
 ## Hardware Overview
 
-![](https://github.com/vcc-gnd/YD-ESP32-S3/raw/main/IMG/img2.png)
+![Module Overview](https://github.com/vcc-gnd/YD-ESP32-S3/blob/main/IMG/img2.PNG?raw=true)
 
 | Main Component | Description |
 | :--- | :--- |
@@ -51,7 +51,7 @@ Before powering on, make sure the board is undamaged.
 
 The main components and connections of the YD-ESP32-S3 are shown below:
 
-![](https://github.com/vcc-gnd/YD-ESP32-S3/raw/main/IMG/img4.png)
+![Functional Block Diagram](https://github.com/vcc-gnd/YD-ESP32-S3/blob/main/IMG/img4.png?raw=true)
 
 ## Power Options
 
@@ -123,7 +123,7 @@ P: Power; I: Input; O: Output; T: can be set to high impedance.
 
 ## Pinout
 
-![](https://github.com/vcc-gnd/YD-ESP32-S3/raw/main/IMG/img11.jpg)
+![Pinout](https://github.com/vcc-gnd/YD-ESP32-S3/blob/main/IMG/img11.jpg?raw=true)
 
 ## CH343 Driver and Firmware Tools
 
@@ -134,13 +134,14 @@ P: Power; I: Input; O: Output; T: can be set to high impedance.
 
 The ESP32-S3 download and erase tool (flash_download_tool_3.9.2_0) is the official Windows download tool. Note: no installation is required; simply unzip and use it directly. Double-click the gear icon, select ESP32-S3, then follow the on-screen instructions. Set the starting address to 0x00 and check the box in front of it. If the download fails, the USB-to-serial driver may not be installed correctly. Install the driver first, then try downloading again.
 
-![](https://github.com/vcc-gnd/YD-ESP32-S3/raw/main/IMG/img3.png)
+![Flash Download Tool](https://github.com/vcc-gnd/YD-ESP32-S3/blob/main/IMG/img3.png?raw=true)
 
 Note:
 
 You cannot use Thonny's built-in ESP32 downloader for the ESP32-S3. The built-in downloader is designed for the standard ESP32, not the ESP32-S3, and uses the incorrect starting address (0x1000 instead of 0x00). Additionally, do not use the official MicroPython SPIRAM firmware—it will not work correctly on this board.
 
 Instead, use Espressif's official flash tool:
+
 1. Select ESP32-S3 serial download mode (USART)
 2. Connect the USB port on the board to your computer
 3. Select the corresponding YD-modified firmware
@@ -150,22 +151,24 @@ Instead, use Espressif's official flash tool:
 
 The firmware is available via links starting with "1-", and the firmware download software is available via links starting with "2-". It is recommended to update the CH343 USB-to-serial hardware driver before use (see reference links starting with "0-"). In Device Manager, confirm that a COM port for the CH343 appears.
 
-**For TASMOTA firmware**, visit the official TASMOTA site: https://tasmota.github.io/docs/
+**For TASMOTA firmware**, visit the official TASMOTA site: [https://tasmota.github.io/docs/](https://tasmota.github.io/docs/)
 
-**For custom firmware**, use Espressif's download tool: https://www.espressif.com.cn/en/home
+**For custom firmware**, use Espressif's download tool: [https://www.espressif.com.cn/en/home](https://www.espressif.com.cn/en/home)
 
 **Reference Materials** for ESP32-S3:
+
 - CH343 hardware serial driver
 - YD-modified MicroPython firmware
 - Firmware download software
 - MicroPython IDE
 - Schematics and dimension drawings
-- Available at: http://124.222.62.86/yd-data/YD-ESP32-S3/
+- Available at: [http://124.222.62.86/yd-data/YD-ESP32-S3/](http://124.222.62.86/yd-data/YD-ESP32-S3/)
 
 **Programming Documentation:**
-- **ESP-IDF (C/C++)**: https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html
-- **Arduino**: https://docs.espressif.com/projects/arduino-esp32/en/latest/getting_started.html#about-arduino-esp32
-- **MicroPython**: https://docs.micropython.org/en/latest/esp32/quickref.html
+
+- **ESP-IDF (C/C++)**: [https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html)
+- **Arduino**: [https://docs.espressif.com/projects/arduino-esp32/en/latest/getting_started.html#about-arduino-esp32](https://docs.espressif.com/projects/arduino-esp32/en/latest/getting_started.html#about-arduino-esp32)
+- **MicroPython**: [https://docs.micropython.org/en/latest/esp32/quickref.html](https://docs.micropython.org/en/latest/esp32/quickref.html)
 
 ## Counterfeit / Fake / Low-Quality Copies
 
@@ -183,7 +186,7 @@ There are many counterfeit, fake, and poor-quality copies of YD development boar
 10. Counterfeit boards sometimes have startup problems and boot directly into bootloader mode, rendering them unusable. Counterfeiters often don't understand this issue.
 11. Because counterfeiters copy from photographs without access to schematics, users and even the counterfeiters themselves struggle to understand how to use the products.
 
-Some counterfeiters directly print "YD-ESP32" and similar markings on counterfeit boards to deceive consumers. Worse, some even print our official website (www.vcc-gnd.com) on counterfeit products. This behavior has triggered legal action, and we will pursue it vigorously. We urge consumers not to chase a marginal saving of a few cents to a few dollars, only to bear all the risks above and waste time and effort. Support genuine YD products; when purchasing, look for the YD and VCC-GND trademarks.
+Some counterfeiters directly print "YD-ESP32" and similar markings on counterfeit boards to deceive consumers. Worse, some even print our official website ([www.vcc-gnd.com](http://www.vcc-gnd.com)) on counterfeit products. This behavior has triggered legal action, and we will pursue it vigorously. We urge consumers not to chase a marginal saving of a few cents to a few dollars, only to bear all the risks above and waste time and effort. Support genuine YD products; when purchasing, look for the YD and VCC-GND trademarks.
 
 ## GPIO Pin Flexibility
 

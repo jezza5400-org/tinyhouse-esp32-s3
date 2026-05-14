@@ -1,13 +1,13 @@
 # Tinyhouse Thermal Mass Controller
 
-Firmware for an ESP32-S3 (or Nano RP2040 Connect) that keeps the tinyhouse thermal mass at the temperature set in the script. It reads Victron VE.Direct power data plus temperature/humidity sensors, drives a relay-controlled heater, and posts a combined JSON payload over Wi-Fi.
+Firmware for an ESP32-S3 that keeps the tinyhouse thermal mass at the temperature set in the script. It reads Victron VE.Direct power data plus temperature/humidity sensors, drives a relay-controlled heater, and posts a combined JSON payload over Wi-Fi.
 
 ## Pins and Connections
 
-- GPIO4: OneWire data (DS18B20 thermal mass temperature sensor).
-- GPIO19: DHT22 data (ambient temperature and humidity).
-- GPIO2: Relay control output (heater).
-- Serial1 (UART, 19200 baud): Victron VE.Direct RX/TX (uses the board default UART1 pins).
+- GPIO7: Relay control output (heater).
+- GPIO15: DHT22 data (ambient temperature and humidity).
+- GPIO16: OneWire data (DS18B20 thermal mass temperature sensor).
+- Serial1 (TX GPIO 17, RX GPIO 18, UART, 19200 baud): Victron VE.Direct RX/TX (uses the board default UART1 pins).
 - Serial (USB): Debug logging.
 
 ## Logic Flow

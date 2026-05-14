@@ -104,3 +104,51 @@ Espressif docs/pages for naming and module distinctions:
 - ESP32-S3-WROOM-2 module page (shows S3R8V/S3R16V family references)
 - ESP-FAQ development board entry referencing S3R8V and VDD_SPI 1.8 V behavior: [Espressif FAQ](https://docs.espressif.com/projects/esp-faq/en/latest/hardware-related/development-board.html)
 - Espressif part-numbering overview: [Espressif developer blog](https://developer.espressif.com/blog/2025/03/espressif-part-numbers-explained/)
+
+## Random notes
+
+serial only works properly when:
+
+```text
+build_flags =
+ -D ARDUINO_USB_CDC_ON_BOOT=1
+ -D ARDUINO_USB_MODE=1
+```
+
+Port on left:  USB/OTG:   Serial  while(!Serial) blocks
+Port on right: USB->UART: Serial0 while(!Serial0) no blocking
+
+Dump whole memory:
+
+```bash
+esptool --chip esp32s3 --port /dev/ttyACM0 --baud 115200 read-flash 0x00000 0x1000000 flash_dump.bin
+```
+
+Dump partition table:
+
+```bash
+esptool --chip esp32s3 --port /dev/ttyACM0 --baud 115200 read-flash 0x8000 0x1000 partition_table.bin
+```
+
+Dump bootloader:
+
+```bash
+esptool --chip esp32s3 --port /dev/ttyACM0 --baud 115200 read-flash 0x1000 0x7000 bootloader.bin
+```
+
+Dump application firmware (get address from partition table):
+
+```bash
+esptool --chip esp32s3 --port /dev/ttyACM0 --baud 115200 read-flash 0x10000 0x200000 app.bin
+```
+
+| Region          | Address | Size    | Description                |
+|-----------------|---------|---------|----------------------------|
+| Bootloader      | 0x0000  | ~0x7000 | First-stage bootloader     |
+| Partition table | 0x8000  | 0x1000  | Defines all flash regions  |
+| App firmware    | 0x10000 | varies  | Main program               |
+| NVS             | varies  | varies  | WiFi settings, keys        |
+| Filesystem      | varies  | varies  | SPIFFS / LittleFS / FAT    |
+| OTA slots       | varies  | varies  | Additional firmware images |
+
+Find locations + sizes: `esptool image-info flash_dump.bin`
