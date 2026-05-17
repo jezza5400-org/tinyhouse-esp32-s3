@@ -2,14 +2,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-
-#if defined(ARDUINO_ARCH_ESP32)
 #include <dhtESP32-rmt.h>
-#elif defined(ARDUINO_ARCH_RP2040)
-#include <DHT.h>
-#else
-#error "DhtCommon supports ARDUINO_ARCH_ESP32 and ARDUINO_ARCH_RP2040 only"
-#endif
 
 /*!
  * @brief Cross-platform DHT temperature and humidity helper.
@@ -26,12 +19,6 @@ public:
 	 *         Minimum interval between sensor reads in milliseconds.
 	 */
 	DhtCommon(uint8_t pin, uint8_t sensorModel = DHT22, unsigned long readIntervalMs = 2500);
-#if defined(ARDUINO_ARCH_RP2040)
-	/*!
-	 * @brief Initialize the RP2040 DHT driver.
-	 */
-	void begin();
-#endif
 	/*!
 	 * @brief Read sensor data when the configured interval has elapsed.
 	 */
@@ -55,8 +42,4 @@ private:
 	float _temperatureC = 0.0f;
 	float _humidityPct = 0.0f;
 	bool _connected = false;
-
-#if defined(ARDUINO_ARCH_RP2040)
-	DHT _dht;
-#endif
 };

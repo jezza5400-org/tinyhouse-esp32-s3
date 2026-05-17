@@ -1,5 +1,6 @@
 #pragma once
 
-constexpr char WIFI_SSID[] = "wifi-ssid";
-constexpr char WIFI_PASSWORD[] = "wifi-password";
-constexpr char DWEET_THING[] = "dweet-id";
+constexpr const char *WIFI_SSID = "SSID";
+constexpr const char *WIFI_PASSWORD = "PASSWORD";
+constexpr const char *HOST = "HOST_ADDRESS";
+constexpr const char *THING = "THING_NAME";

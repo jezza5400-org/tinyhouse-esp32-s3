@@ -1,6 +1,6 @@
 # Tinyhouse Thermal Mass Controller
 
-Firmware for an ESP32-S3 that keeps the tinyhouse thermal mass at the temperature set in the script. It reads Victron VE.Direct power data plus temperature/humidity sensors, drives a relay-controlled heater, and posts a combined JSON payload over Wi-Fi.
+Firmware for an ESP32-S3 that keeps the tinyhouse thermal mass at the temperature set in the script. It reads Victron VE.Direct power data plus temperature/humidity sensors, drives a relay-controlled heater, and sends the combined sensor payload to dweet using bracket-notation URL query parameters over Wi-Fi.
 
 ## Pins and Connections
 
@@ -29,7 +29,7 @@ Firmware for an ESP32-S3 that keeps the tinyhouse thermal mass at the temperatur
   - If battery voltage or panel voltage is below 11800 mV, force the relay OFF.
   - Otherwise, turn ON at 20C and turn OFF at 24C.
 - Reconnect Wi-Fi if disconnected.
-- When a fresh VE.Direct frame arrives and both sensors are connected, publish a combined JSON payload every 10s.
+- When a fresh VE.Direct frame arrives and both sensors are connected, publish a combined payload every 10s.
 
 The temperature setpoints are defined in src/main.cpp as `T_ON` and `T_OFF`.
 

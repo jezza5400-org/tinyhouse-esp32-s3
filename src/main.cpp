@@ -5,12 +5,10 @@
 #include <DhtCommon.h>
 #include <OneWireCommon.h>
 #include <VeDirectParser.h>
-#include <WiFiSender.h>
+#include <WiFiCommon.h>
 
 #include "secrets.h"
 
-constexpr char DWEET_HOST[] = "10.42.110.2";
-constexpr uint16_t DWEET_PORT = 8080;
 constexpr uint8_t RELAY_PIN = 7;
 constexpr uint8_t DHT_PIN = 15;
 constexpr uint8_t ONEWIRE_PIN = 16;
@@ -19,7 +17,7 @@ constexpr uint8_t T_OFF = 24;
 constexpr uint16_t BATT_CUTOFF = 11800;
 constexpr uint16_t SENSOR_FAILSAFE_OFF_MS = 5000;
 
-WiFiSender jsonSender(DWEET_HOST, DWEET_PORT, DWEET_THING);
+WiFiCommon wifi(HOST, THING);
 VeDirectParser veParser;
 OneWireCommon oneWireCommon(ONEWIRE_PIN);
 DhtCommon dhtCommon(DHT_PIN, DHT22, 2500);
@@ -52,32 +50,6 @@ void controlHeater() {
 	}
 }
 
-void printWifiStatus() {
-	Serial.println(String("SSID: ") + WiFi.SSID());
-	Serial.println(String("IP Address: ") + WiFi.localIP().toString());
-	Serial.println("Signal strength (RSSI): " + String(WiFi.RSSI()) + " dBm");
-}
-
-void connectWifi() {
-	while (WiFi.status() != WL_CONNECTED) {
-		Serial.println(String("Attempting to connect to network ") + WIFI_SSID);
-		WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-		unsigned long waitStart = millis();
-		while (WiFi.status() != WL_CONNECTED && (millis() - waitStart) < 10000) delay(100);
-
-		if (WiFi.status() == WL_CONNECTED) break;
-
-		WiFi.disconnect(true, false);
-		delay(100);
-		WiFi.mode(WIFI_STA);
-
-		oneWireCommon.pollBlocking();
-		veParser.process(Serial1);
-		controlHeater();
-	}
-}
-
 bool publishCombinedPayload() {
 	JsonDocument combinedDoc;
 	JsonObject payload = combinedDoc.to<JsonObject>();
@@ -96,7 +68,7 @@ bool publishCombinedPayload() {
 	serializeJson(combinedDoc, Serial);
 	Serial.println();
 
-	return jsonSender.send(combinedDoc);
+	return wifi.send(combinedDoc);
 }
 
 void setup() {
@@ -104,12 +76,11 @@ void setup() {
 	Serial1.begin(19200);
 	// while (!Serial) yield();
 	oneWireCommon.begin();
-
 	veParser.begin();
 	pinMode(RELAY_PIN, OUTPUT);
 	digitalWrite(RELAY_PIN, LOW);
-	connectWifi();
-	printWifiStatus();
+	wifi.connect(WIFI_SSID, WIFI_PASSWORD);
+	printWiFiStatus();
 }
 
 void loop() {
@@ -129,6 +100,6 @@ void loop() {
 
 		veParser.markFrameConsumed();
 	} else if (WiFi.status() != WL_CONNECTED) {
-		connectWifi();
+		wifi.connect(WIFI_SSID, WIFI_PASSWORD);
 	}
 }

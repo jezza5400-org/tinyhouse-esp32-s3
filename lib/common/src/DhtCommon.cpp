@@ -1,26 +1,13 @@
 #include "DhtCommon.h"
 
 DhtCommon::DhtCommon(uint8_t pin, uint8_t sensorModel, unsigned long readIntervalMs)
-	: _pin(pin), _sensorModel(sensorModel), _readIntervalMs(readIntervalMs)
-#if defined(ARDUINO_ARCH_RP2040)
-	  ,
-	  _dht(pin, sensorModel)
-#endif
-{
-}
-
-#if defined(ARDUINO_ARCH_RP2040)
-void DhtCommon::begin() {
-	_dht.begin();
-}
-#endif
+	: _pin(pin), _sensorModel(sensorModel), _readIntervalMs(readIntervalMs) {}
 
 void DhtCommon::poll() {
 	unsigned long now = millis();
 	if ((now - _lastReadMillis) < _readIntervalMs) return;
 	_lastReadMillis = now;
 
-#if defined(ARDUINO_ARCH_ESP32)
 	float temperatureC = 0.0f;
 	float humidity = 0.0f;
 	uint8_t errorCode = read_dht(temperatureC, humidity, _pin, _sensorModel);
@@ -31,17 +18,6 @@ void DhtCommon::poll() {
 	} else if (errorCode != 1) {
 		_connected = false;
 	}
-#elif defined(ARDUINO_ARCH_RP2040)
-	float temperatureC = _dht.readTemperature();
-	float humidity = _dht.readHumidity();
-	if (isnan(humidity) || isnan(temperatureC)) {
-		_connected = false;
-	} else {
-		_connected = true;
-		_temperatureC = temperatureC;
-		_humidityPct = humidity;
-	}
-#endif
 }
 
 void DhtCommon::appendPayload(JsonObject payload) const {
