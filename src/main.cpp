@@ -79,7 +79,7 @@ void setup() {
 	veParser.begin();
 	pinMode(RELAY_PIN, OUTPUT);
 	digitalWrite(RELAY_PIN, LOW);
-	wifi.connect(WIFI_SSID, WIFI_PASSWORD);
+	connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 	printWiFiStatus();
 }
 
@@ -100,6 +100,6 @@ void loop() {
 
 		veParser.markFrameConsumed();
 	} else if (WiFi.status() != WL_CONNECTED) {
-		wifi.connect(WIFI_SSID, WIFI_PASSWORD);
+		connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 	}
 }

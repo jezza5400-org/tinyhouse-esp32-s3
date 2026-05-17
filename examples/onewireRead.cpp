@@ -12,12 +12,12 @@ void setup(void) {
 	Serial.println("Dallas Temperature IC Control Library Demo");
 	sensors.begin();
 	sensors.setWaitForConversion(true);
-	Serial.println("Current Resolution: " + String(sensors.getResolution()) + " bits");
+	Serial.printf("Current Resolution: %d bits\r\n", sensors.getResolution());
 }
 
 void loop(void) {
 	start = millis();
 	Serial.print("Requesting temperatures...");
 	sensors.requestTemperatures();
-	Serial.println("DONE\nTemperature is: " + String(sensors.getTempCByIndex(0)) + ", Found in: " + String((millis() - start)));
+	Serial.printf("DONE\nTemperature is: %.2f, Found in: %lu\r\n", sensors.getTempCByIndex(0), static_cast<unsigned long>(millis() - start));
 }

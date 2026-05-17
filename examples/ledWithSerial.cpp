@@ -19,8 +19,8 @@ void loop() {
 	static uint8_t hue = 0;
 	leds[0] = CHSV(hue, 255, 255);
 	FastLED.show();
-	Serial.println("Hue from Serial  " + String(hue));
-	Serial0.println("Hue from Serial0 " + String(hue));
+	Serial.printf("Hue from Serial  %d\r\n", hue);
+	Serial0.printf("Hue from Serial0 %d\r\n", hue);
 	hue++;
 	delay(100);
 }

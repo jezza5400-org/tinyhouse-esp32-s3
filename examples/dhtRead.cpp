@@ -34,7 +34,7 @@ const char *dhtErrorToString(uint8_t errorCode) {
 void setup() {
 	Serial.begin(115200);
 	while (!Serial) yield();
-	Serial.println("DHT pin: " + String(DHT_PIN) + "\nDHT Test");
+	Serial.printf("DHT pin: %d\nDHT Test\r\n", DHT_PIN);
 }
 
 void loop() {
@@ -47,9 +47,9 @@ void loop() {
 
 	uint8_t errorCode = read_dht(temperatureC, humidity, DHT_PIN, DHT_SENSOR_MODEL);
 	if (errorCode != 0) {
-		Serial.println("DHT read error: " + String(errorCode) + " (" + dhtErrorToString(errorCode) + ")");
+		Serial.printf("DHT read error: %d (%s)\r\n", errorCode, dhtErrorToString(errorCode));
 		return;
 	}
 
-	Serial.println("Humidity: " + String(humidity) + " %, Temp: " + String(temperatureC) + " Celsius");
+	Serial.printf("Humidity: %f %%, Temp: %f Celsius\r\n", humidity, temperatureC);
 }

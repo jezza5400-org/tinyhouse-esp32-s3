@@ -8,7 +8,7 @@ const char *password = WIFI_PASSWORD;
 
 void connectWifi() {
 	while (WiFi.status() != WL_CONNECTED) {
-		Serial.println(String("Attempting to connect to network ") + ssid);
+		Serial.printf("Attempting to connect to network %s\r\n", ssid);
 		WiFi.begin(ssid, password);
 
 		unsigned long waitStart = millis();
@@ -33,9 +33,8 @@ void setup() {
 	Serial.println("\nConnecting to WiFi...");
 	connectWifi();
 
-	Serial.println("\nWiFi connected!");
-	Serial.print("IP Address: ");
-	Serial.println(WiFi.localIP());
+	IPAddress localIp = WiFi.localIP();
+	Serial.printf("\nWiFi connected!\nIP Address: %d.%d.%d.%d\r\n", localIp[0], localIp[1], localIp[2], localIp[3]);
 }
 
 void loop() {
