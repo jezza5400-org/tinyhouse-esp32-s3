@@ -14,7 +14,7 @@ void setup() {
 	while (!Serial) yield();
 	delay(1000);
 
-	wifi.connect(ssid, password);
+	connectWiFi(ssid, password);
 
 	JsonDocument payload;
 	JsonObject victron = payload["victron"].to<JsonObject>();

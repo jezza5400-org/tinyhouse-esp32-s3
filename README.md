@@ -12,7 +12,7 @@ Firmware for an ESP32-S3 that keeps the tinyhouse thermal mass at the temperatur
 
 ## Logic Flow
 
-1. Setup:
+**Setup:**
 
 - Start Serial at 9600 for debug and Serial1 at 19200 for VE.Direct.
 - Initialize OneWire and DHT sensor helpers.
@@ -20,7 +20,7 @@ Firmware for an ESP32-S3 that keeps the tinyhouse thermal mass at the temperatur
 - Configure the relay pin as output and default it to OFF.
 - Connect to Wi-Fi and print network status.
 
-2. Loop:
+**Loop:**
 
 - Poll OneWire and DHT sensors.
 - Process VE.Direct bytes from Serial1.

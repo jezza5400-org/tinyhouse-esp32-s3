@@ -142,13 +142,7 @@ bool connectWiFi(const char *ssid, const char *password) {
 
 void printWiFiStatus() {
 	IPAddress localIp = WiFi.localIP();
-	Serial.printf("SSID: %s\r\nIP Address: %d.%d.%d.%d\r\nSignal strength (RSSI): %d dBm\r\n",
-		WiFi.SSID().c_str(),
-		localIp[0],
-		localIp[1],
-		localIp[2],
-		localIp[3],
-		WiFi.RSSI());
+	Serial.printf("SSID: %s\r\nIP Address: %d.%d.%d.%d\r\nSignal strength (RSSI): %d dBm\r\n", WiFi.SSID().c_str(), localIp[0], localIp[1], localIp[2], localIp[3], WiFi.RSSI());
 }
 
 void resetWiFi() {

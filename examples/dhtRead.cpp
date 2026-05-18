@@ -51,5 +51,5 @@ void loop() {
 		return;
 	}
 
-	Serial.printf("Humidity: %f %%, Temp: %f Celsius\r\n", humidity, temperatureC);
+	Serial.printf("Humidity: %.1f %%, Temp: %.1f Celsius\r\n", humidity, temperatureC);
 }

@@ -9,18 +9,15 @@ void setup() {
 	FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
 	FastLED.setBrightness(128);
 	Serial.begin(115200);
-	Serial0.begin(115200);
 	leds[0] = CHSV(0, 255, 255);
 	FastLED.show();
-	while (!Serial) yield();
 }
 
 void loop() {
 	static uint8_t hue = 0;
 	leds[0] = CHSV(hue, 255, 255);
 	FastLED.show();
-	Serial.printf("Hue from Serial  %d\r\n", hue);
-	Serial0.printf("Hue from Serial0 %d\r\n", hue);
+	Serial.printf("Hue: %hhu\r\n", hue);
 	hue++;
 	delay(100);
 }

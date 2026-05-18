@@ -8,18 +8,13 @@ void printNetworks() {
 		Serial.println("No networks found.");
 		return;
 	}
-	
+
 	for (int i = 0; i < n; i++) {
-		Serial.printf("%2d: %-32s  RSSI: %4d  CH: %2d  ENC: %s\n",
-			i,
-			WiFi.SSID(i).c_str(),
-			WiFi.RSSI(i),
-			WiFi.channel(i),
-			(WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "OPEN" : "SECURED");
-		}
-		Serial.println("-----------------\n");
+		Serial.printf("%2d: %-32s  RSSI: %4d  CH: %2d  ENC: %s\n", i, WiFi.SSID(i).c_str(), WiFi.RSSI(i), WiFi.channel(i), (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "OPEN" : "SECURED");
 	}
-	
+	Serial.println("-----------------\n");
+}
+
 void connectToNetwork(String ssid, String password) {
 	Serial.printf("Connecting to '%s'...\n", ssid.c_str());
 	WiFi.begin(ssid.c_str(), password.c_str());
@@ -41,7 +36,7 @@ void setup() {
 	Serial.begin(115200);
 	while (!Serial) yield();
 	delay(1000);
-	
+
 	Serial.println("\nESP32 WiFi Scanner + Connector");
 	esp_wifi_set_country_code("AU", true);
 	WiFi.mode(WIFI_STA);
