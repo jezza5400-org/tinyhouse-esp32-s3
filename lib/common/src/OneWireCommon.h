@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <DallasTemperature.h>
@@ -16,30 +15,39 @@ public:
 	 *         GPIO pin connected to the OneWire data bus.
 	 */
 	explicit OneWireCommon(uint8_t pin);
+
 	/*!
-	 * @brief Initialize the OneWire bus and start the first conversion.
+	 * @brief Initialize the OneWire bus, probe the first sensor address, and prime the first conversion.
 	 */
 	void begin();
+
 	/*!
-	 * @brief Update cached temperature data from the OneWire sensor. Waits for conversion to completion.
+	 * @brief Request a temperature conversion and block until it completes (~750ms at 12-bit resolution).
+	 *        Updates the cached temperature from the first sensor on the bus.
 	 */
 	void pollBlocking();
+
 	/*!
-	 * @brief Update cached temperature data from the OneWire sensor. Returns early if conversion is still in progress.
+	 * @brief Advance the legacy async polling state machine.
 	 */
 	void pollAsync();
+
 	/*!
 	 * @brief Append cached OneWire values into a JSON payload.
 	 * @param payload
-	 *         JSON object that receives the OneWireTemp sub-object fields.
+	 *         JSON object that receives the OneWireTemp sub-object fields:
+	 *         sensor_connected (bool) and temperature_c (float).
 	 */
 	void appendPayload(JsonObject payload) const;
+
 	/*!
 	 * @brief Return the last known temperature in Celsius.
+	 *        Returns DEVICE_DISCONNECTED_C (-127.0) if the sensor is absent.
 	 */
 	float getTempC() const;
+
 	/*!
-	 * @brief Report whether a OneWire temperature sensor is connected.
+	 * @brief Return true if the last poll returned a valid temperature.
 	 */
 	bool isConnected() const;
 
@@ -49,5 +57,5 @@ private:
 	DeviceAddress _address;
 	bool _conversionInProgress = false;
 	bool _addressKnown = false;
-	float _temperatureC = 0.0f;
+	float _temperatureC = DEVICE_DISCONNECTED_C;
 };

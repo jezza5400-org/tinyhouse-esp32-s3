@@ -72,13 +72,14 @@ bool publishCombinedPayload() {
 }
 
 void setup() {
-	Serial.begin(9600);
-	Serial1.begin(19200);
-	// while (!Serial) yield();
+	Serial.begin(115200);
+	Serial1.begin(19200, SERIAL_8N1, 18, 17);
 	oneWireCommon.begin();
 	veParser.begin();
 	pinMode(RELAY_PIN, OUTPUT);
 	digitalWrite(RELAY_PIN, LOW);
+	while (!Serial) yield();
+	delay(1000);
 	connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 	printWiFiStatus();
 }
@@ -89,6 +90,8 @@ void loop() {
 	dhtCommon.poll();
 	veParser.process(Serial1);
 	controlHeater();
+
+	Serial.printf("Onewire: %f, DHT Temp: %f, DHT Humid: %f\r\n", oneWireCommon.getTempC(), dhtCommon.getTempC(), dhtCommon.getHumidPct());
 
 	if (WiFi.status() == WL_CONNECTED && veParser.hasFreshFrame()) {
 		if (!oneWireCommon.isConnected() || !dhtCommon.isConnected()) {

@@ -19,16 +19,29 @@ public:
 	 *         Minimum interval between sensor reads in milliseconds.
 	 */
 	DhtCommon(uint8_t pin, uint8_t sensorModel = DHT22, unsigned long readIntervalMs = 2500);
+
 	/*!
 	 * @brief Read sensor data when the configured interval has elapsed.
 	 */
 	void poll();
+
 	/*!
 	 * @brief Append cached DHT values into a JSON payload.
 	 * @param payload
 	 *         JSON object that receives the DHT22 sub-object fields.
 	 */
 	void appendPayload(JsonObject payload) const;
+
+	/*!
+	 * @brief Return the last known temperature in Celsius.
+	 */
+	float getTempC() const;
+
+	/*!
+	 * @brief Return the last known humidity in %.
+	 */
+	float getHumidPct() const;
+
 	/*!
 	 * @brief Report whether the sensor is currently connected.
 	 */

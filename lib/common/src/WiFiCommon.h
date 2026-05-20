@@ -52,6 +52,7 @@ public:
 	 *         Dweet thing name used in the request path.
 	 */
 	WiFiCommon(const char *host, const char *thing);
+
 	/*!
 	 * @brief Send a payload to the configured HTTPS endpoint.
 	 * @param payload
@@ -59,6 +60,7 @@ public:
 	 * @return true when request write complete successfully.
 	 */
 	bool send(const JsonDocument &payload);
+
 	/*!
 	 * @brief Send a raw query string to the configured HTTPS endpoint.
 	 * @param payload
@@ -83,10 +85,12 @@ private:
  *         WiFi password.
  */
 bool connectWiFi(const char *ssid, const char *password);
+
 /*!
  * @brief Prints to Serial the current WiFi status.
  */
 void printWiFiStatus();
+
 /*!
  * @brief Resets WiFi
  */

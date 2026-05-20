@@ -17,7 +17,7 @@ void OneWireCommon::pollBlocking() {
 	float temp = DEVICE_DISCONNECTED_C;
 	while ((millis() - start) < 3000) {
 		if (_sensors.isConversionComplete()) {
-			temp = _sensors.getTempC(_address);
+			temp = _sensors.getTempCByIndex(0);
 			if (temp != DEVICE_DISCONNECTED_C) break;
 			_sensors.requestTemperatures();
 		}
@@ -25,6 +25,7 @@ void OneWireCommon::pollBlocking() {
 	}
 	if (temp == DEVICE_DISCONNECTED_C) Serial.println("OneWire device disconnected.");
 	_temperatureC = temp;
+	_conversionInProgress = false;
 }
 
 void OneWireCommon::pollAsync() {
@@ -44,7 +45,7 @@ void OneWireCommon::pollAsync() {
 
 void OneWireCommon::appendPayload(JsonObject payload) const {
 	JsonObject oneWireTemp = payload["OneWireTemp"].to<JsonObject>();
-	oneWireTemp["sensor_connected"] = _addressKnown && _temperatureC != DEVICE_DISCONNECTED_C;
+	oneWireTemp["sensor_connected"] = isConnected();
 	oneWireTemp["temperature_c"] = _temperatureC;
 }
 
@@ -53,5 +54,5 @@ float OneWireCommon::getTempC() const {
 }
 
 bool OneWireCommon::isConnected() const {
-	return _addressKnown && _temperatureC != DEVICE_DISCONNECTED_C;
+	return _temperatureC != DEVICE_DISCONNECTED_C;
 }

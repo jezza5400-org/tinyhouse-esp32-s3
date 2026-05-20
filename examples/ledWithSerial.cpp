@@ -3,6 +3,7 @@
 
 #define LED_PIN 48
 #define NUM_LEDS 1
+
 CRGB leds[NUM_LEDS];
 
 void setup() {

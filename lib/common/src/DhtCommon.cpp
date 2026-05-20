@@ -27,6 +27,14 @@ void DhtCommon::appendPayload(JsonObject payload) const {
 	dht22["humidity_pct"] = _humidityPct;
 }
 
+float DhtCommon::getTempC() const {
+	return _temperatureC;
+}
+
+float DhtCommon::getHumidPct() const {
+	return _humidityPct;
+}
+
 bool DhtCommon::isConnected() const {
 	return _connected;
 }
