@@ -15,7 +15,7 @@ constexpr uint8_t ONEWIRE_PIN = 16;
 constexpr uint8_t T_ON = 20;
 constexpr uint8_t T_OFF = 24;
 constexpr uint16_t BATT_CUTOFF = 11800;
-constexpr uint16_t SENSOR_FAILSAFE_OFF_MS = 5000;
+constexpr uint16_t SENSOR_FAILSAFE_OFF_MS = 30000;
 
 WiFiCommon wifi(HOST, THING);
 VeDirectParser veParser;
@@ -78,14 +78,13 @@ void setup() {
 	veParser.begin();
 	pinMode(RELAY_PIN, OUTPUT);
 	digitalWrite(RELAY_PIN, LOW);
-	while (!Serial) yield();
-	delay(1000);
+	// while (!Serial) yield();
+	// delay(1000);
 	connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 	printWiFiStatus();
 }
 
 void loop() {
-	static unsigned long lastPublish = 0;
 	oneWireCommon.pollBlocking();
 	dhtCommon.poll();
 	veParser.process(Serial1);
@@ -96,9 +95,12 @@ void loop() {
 	if (WiFi.status() == WL_CONNECTED && veParser.hasFreshFrame()) {
 		if (!oneWireCommon.isConnected() || !dhtCommon.isConnected()) {
 			Serial.println("Skipping publish: one or more sensors disconnected");
-		} else if (millis() - lastPublish >= 10000) {
-			if (!publishCombinedPayload()) Serial.println("Failed to send combined payload");
-			lastPublish = millis();
+		} else {
+			if (publishCombinedPayload()) {
+				vTaskDelay(pdMS_TO_TICKS(30000));
+			} else {
+				Serial.println("Failed to send combined payload");
+			}
 		}
 
 		veParser.markFrameConsumed();
