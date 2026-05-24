@@ -116,11 +116,20 @@ bool WiFiCommon::sendQueryString(const String &queryString) {
 	}
 
 	https.end();
-	_client.stop();
+	if (httpCode <= 0) _client.stop();
 	return success;
 }
 
+void configureWiFiCountry() {
+	Serial.println("Setting WiFi country to 'AU'");
+	const esp_err_t err = esp_wifi_set_country_code("AU", false);
+	if (err != ESP_OK) {
+		Serial.println("Failed to set WiFi country to 'AU'");
+	}
+}
+
 bool connectWiFi(const char *ssid, const char *password) {
+	static unsigned long lastReset = millis();
 	Serial.printf("Connecting to '%s'...\n", ssid);
 	WiFi.begin(ssid, password);
 
@@ -131,9 +140,14 @@ bool connectWiFi(const char *ssid, const char *password) {
 	}
 
 	if (WiFi.status() == WL_CONNECTED) {
+		lastReset = millis();
 		IPAddress localIp = WiFi.localIP();
 		Serial.printf("\nConnected! IP: %d.%d.%d.%d\n", localIp[0], localIp[1], localIp[2], localIp[3]);
 		return true;
+	} else if (millis() - lastReset >= 60000) {
+		lastReset = millis();
+		resetWiFi(true);
+		return false;
 	} else {
 		Serial.println("\nFailed to connect.");
 		return false;
@@ -145,8 +159,14 @@ void printWiFiStatus() {
 	Serial.printf("SSID: %s\r\nIP Address: %d.%d.%d.%d\r\nSignal strength (RSSI): %d dBm\r\n", WiFi.SSID().c_str(), localIp[0], localIp[1], localIp[2], localIp[3], WiFi.RSSI());
 }
 
-void resetWiFi() {
-	WiFi.disconnect(true, false);
-	delay(100);
+void resetWiFi(bool eraseAP) {
+	Serial.println("Reseting WiFi");
+	WiFi.disconnect(true, eraseAP);
+	delay(200);
+	WiFi.mode(WIFI_OFF);
+	delay(200);
 	WiFi.mode(WIFI_STA);
+	delay(200);
+	configureWiFiCountry();
+	delay(200);
 }

@@ -80,6 +80,8 @@ void setup() {
 	digitalWrite(RELAY_PIN, LOW);
 	// while (!Serial) yield();
 	// delay(1000);
+	WiFi.mode(WIFI_STA);
+	configureWiFiCountry();
 	connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 	printWiFiStatus();
 }

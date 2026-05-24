@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include <esp_wifi.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
@@ -78,6 +79,11 @@ private:
 };
 
 /*!
+ * @brief Configures WiFi Country
+*/
+void configureWiFiCountry();
+
+/*!
  * @brief Connects to WiFi.
  * @param ssid
  *         WiFi ssid.
@@ -93,5 +99,7 @@ void printWiFiStatus();
 
 /*!
  * @brief Resets WiFi
+ * @param eraseAP
+ *         True to erase the AP configuration from the NVS memory.
  */
-void resetWiFi();
+void resetWiFi(bool eraseAP = false);
