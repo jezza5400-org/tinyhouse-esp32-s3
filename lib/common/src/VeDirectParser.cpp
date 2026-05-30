@@ -59,6 +59,10 @@ void VeDirectParser::handleLine(const String &line) {
 		_battVoltage = value.toInt();
 	} else if (key == "VPV") {
 		_panelVoltage = value.toInt();
+	} else if (key == "I") {
+		_battCurrentMa = value.toInt();
+	} else if (key == "PPV") {
+		_panelPowerW = value.toInt();
 	}
 }
 
@@ -115,4 +119,12 @@ uint16_t VeDirectParser::getBattVoltage() const {
 
 uint16_t VeDirectParser::getPanelVoltage() const {
 	return _panelVoltage;
+}
+
+int32_t VeDirectParser::getBattCurrentMa() const {
+	return _battCurrentMa;
+}
+
+uint16_t VeDirectParser::getPanelPowerW() const {
+	return _panelPowerW;
 }

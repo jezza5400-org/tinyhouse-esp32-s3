@@ -26,7 +26,8 @@ Firmware for an ESP32-S3 that keeps the tinyhouse thermal mass at the temperatur
 - Process VE.Direct bytes from Serial1.
 - Control the heater with hysteresis:
   - If the OneWire sensor is missing for 5s, force the relay OFF.
-  - If battery voltage or panel voltage is below 11800 mV, force the relay OFF.
+  - Keep the existing power rule: if battery voltage or panel voltage is above 11800 mV, heating is allowed.
+  - If battery is below the cutoff, allow heating only when panel power can cover the configured heater-bank power plus a safety margin, and projected battery current remains safely non-negative.
   - Otherwise, turn ON at 20C and turn OFF at 24C.
 - Reconnect Wi-Fi if disconnected.
 - When a fresh VE.Direct frame arrives and both sensors are connected, publish a combined payload every 10s.
@@ -73,3 +74,4 @@ The temperature setpoints are defined in src/main.cpp as `T_ON` and `T_OFF`.
 ## Configuration
 
 Wi-Fi credentials and the Dweet thing name live in include/secrets.h.
+Heater solar-surplus tuning values (`HEATER_BANK_POWER_W`, `SOLAR_SURPLUS_ON_W`, `SOLAR_SURPLUS_OFF_W`, `NET_BATT_MARGIN_ON_MA`, `NET_BATT_MARGIN_OFF_MA`) are in `src/main.cpp`.

@@ -48,6 +48,16 @@ public:
 	 */
 	uint16_t getPanelVoltage() const;
 
+	/*!
+	 * @brief Returns the last known battery current in mA.
+	 */
+	int32_t getBattCurrentMa() const;
+
+	/*!
+	 * @brief Returns the last known panel power in W.
+	 */
+	uint16_t getPanelPowerW() const;
+
 private:
 	enum class ParseState : uint8_t {
 		Idle,
@@ -85,4 +95,6 @@ private:
 	bool _hasFreshFrame = false;
 	uint16_t _battVoltage = 0;
 	uint16_t _panelVoltage = 0;
+	int32_t _battCurrentMa = 0;
+	uint16_t _panelPowerW = 0;
 };
