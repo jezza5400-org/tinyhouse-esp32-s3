@@ -39,6 +39,16 @@ public:
 	void markFrameConsumed();
 
 	/*!
+	 * @brief Clear cached telemetry and invalidate the latest parsed frame.
+	 */
+	void clearTelemetry();
+
+	/*!
+	 * @brief Return true when the latest validated frame is newer than maxAgeMs.
+	 */
+	bool isTelemetryFresh(uint32_t maxAgeMs) const;
+
+	/*!
 	 * @brief Returns the last known battery voltage in mV.
 	 */
 	uint16_t getBattVoltage() const;
@@ -93,6 +103,7 @@ private:
 	ParseState _state = ParseState::Idle;
 	uint8_t _checksum = 0;
 	bool _hasFreshFrame = false;
+	uint32_t _lastValidFrameAtMs = 0;
 	uint16_t _battVoltage = 0;
 	uint16_t _panelVoltage = 0;
 	int32_t _battCurrentMa = 0;

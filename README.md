@@ -26,13 +26,14 @@ Firmware for an ESP32-S3 that keeps the tinyhouse thermal mass at the temperatur
 - Process VE.Direct bytes from Serial1.
 - Control the heater with hysteresis:
   - If the OneWire sensor is missing for 5s, force the relay OFF.
+  - If VE.Direct telemetry is stale for 10s, force the relay OFF.
   - Keep the existing power rule: if battery voltage or panel voltage is above 11800 mV, heating is allowed.
-  - If battery is below the cutoff, allow heating only when panel power can cover the configured heater-bank power plus a safety margin, and predicted net battery current (including heater draw) stays above the configured positive margins (`NET_BATT_MARGIN_ON_MA` / `NET_BATT_MARGIN_OFF_MA`) so charging remains positive.
+  - If battery is below the cutoff, allow heating only when fresh VE.Direct telemetry shows panel power can cover the configured heater load plus a safety margin, and battery current remains net-positive with hysteresis (`NET_BATT_MARGIN_ON_MA` / `NET_BATT_MARGIN_OFF_MA`).
   - Otherwise, turn ON at 20C and turn OFF at 24C.
 - Reconnect Wi-Fi if disconnected.
 - When a fresh VE.Direct frame arrives and both sensors are connected, publish a combined payload every 10s.
 
-The temperature setpoints are defined in src/main.cpp as `T_ON` and `T_OFF`.
+The temperature setpoints are defined in src/main.cpp as `TEMP_ON` and `TEMP_OFF`.
 
 ## Example Payload
 
@@ -74,4 +75,4 @@ The temperature setpoints are defined in src/main.cpp as `T_ON` and `T_OFF`.
 ## Configuration
 
 Wi-Fi credentials and the Dweet thing name live in include/secrets.h.
-Heater solar-surplus tuning values (`HEATER_EFFECTIVE_POWER_W`, `SOLAR_SURPLUS_ON_W`, `SOLAR_SURPLUS_OFF_W`, `NET_BATT_MARGIN_ON_MA`, `NET_BATT_MARGIN_OFF_MA`) are in `src/main.cpp`.
+Heater solar-surplus tuning values (`HEATER_EFFECTIVE_POWER_W`, `REQUIRED_PANEL_POWER_ON_W`, `REQUIRED_PANEL_POWER_OFF_W`, `NET_BATT_MARGIN_ON_MA`, `NET_BATT_MARGIN_OFF_MA`, `VE_DIRECT_FAILSAFE_OFF_MS`, `COMBINED_PAYLOAD_INTERVAL_MS`) are in `src/main.cpp`.

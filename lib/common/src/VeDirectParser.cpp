@@ -1,9 +1,8 @@
 #include "VeDirectParser.h"
 
 void VeDirectParser::begin() {
+	clearTelemetry();
 	resetWorkingFrame();
-	_latestFrameDoc.clear();
-	_hasFreshFrame = false;
 }
 
 void VeDirectParser::resetWorkingFrame() {
@@ -40,6 +39,7 @@ void VeDirectParser::finalizeWorkingFrame() {
 	}
 
 	_hasFreshFrame = true;
+	_lastValidFrameAtMs = millis();
 	resetWorkingFrame();
 }
 
@@ -111,6 +111,20 @@ void VeDirectParser::copyFieldsTo(JsonObject target) const {
 
 void VeDirectParser::markFrameConsumed() {
 	_hasFreshFrame = false;
+}
+
+void VeDirectParser::clearTelemetry() {
+	_hasFreshFrame = false;
+	_lastValidFrameAtMs = 0;
+	_latestFrameDoc.clear();
+	_battVoltage = 0;
+	_panelVoltage = 0;
+	_battCurrentMa = 0;
+	_panelPowerW = 0;
+}
+
+bool VeDirectParser::isTelemetryFresh(uint32_t maxAgeMs) const {
+	return _lastValidFrameAtMs != 0 && (millis() - _lastValidFrameAtMs) <= maxAgeMs;
 }
 
 uint16_t VeDirectParser::getBattVoltage() const {
