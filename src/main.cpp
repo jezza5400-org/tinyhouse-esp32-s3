@@ -12,10 +12,19 @@
 constexpr uint8_t RELAY_PIN = 7;
 constexpr uint8_t DHT_PIN = 15;
 constexpr uint8_t ONEWIRE_PIN = 16;
-constexpr uint8_t T_ON = 20;
-constexpr uint8_t T_OFF = 24;
-constexpr uint16_t BATT_CUTOFF = 11800;
+constexpr uint8_t TEMP_ON = 20;
+constexpr uint8_t TEMP_OFF = 24;
+constexpr int32_t NET_BATT_MARGIN_ON_MA = 200;
+constexpr int32_t NET_BATT_MARGIN_OFF_MA = 50;
+constexpr uint16_t BATT_CUTOFF_V = 11800;
+constexpr uint32_t VE_DIRECT_FAILSAFE_OFF_MS = 30000;
+constexpr uint32_t COMBINED_PAYLOAD_INTERVAL_MS = 10000;
 constexpr uint16_t SENSOR_FAILSAFE_OFF_MS = 30000;
+constexpr float HEATER_EFFECTIVE_POWER_W = 16.8f;
+constexpr float REQUIRED_PANEL_POWER_ON_W = HEATER_EFFECTIVE_POWER_W + 6.0f;
+constexpr float REQUIRED_PANEL_POWER_OFF_W = HEATER_EFFECTIVE_POWER_W + 3.0f;
+constexpr uint16_t MIN_VALID_BATT_VOLTAGE_MV = 1000;
+static unsigned long combinedPayloadLastSentAtMs = 0;
 
 WiFiCommon wifi(HOST, THING);
 VeDirectParser veParser;
@@ -27,8 +36,30 @@ void controlHeater() {
 
 	const bool sensorConnected = oneWireCommon.isConnected();
 	const float waterTempC = oneWireCommon.getTempC();
-	const bool powerOk = veParser.getBattVoltage() > BATT_CUTOFF || veParser.getPanelVoltage() > BATT_CUTOFF;
 	const bool heaterOn = digitalRead(RELAY_PIN) == HIGH;
+
+	if (!veParser.isTelemetryFresh(VE_DIRECT_FAILSAFE_OFF_MS)) {
+		veParser.clearTelemetry();
+		digitalWrite(RELAY_PIN, LOW);
+		return;
+	}
+
+	const bool powerOkByBatteryRule = veParser.getBattVoltage() > BATT_CUTOFF_V || veParser.getPanelVoltage() > BATT_CUTOFF_V;
+
+	const uint16_t battVoltageMv = veParser.getBattVoltage();
+	const int32_t battCurrentMa = veParser.getBattCurrentMa();
+	const uint16_t panelPowerW = veParser.getPanelPowerW();
+	const float requiredPanelPowerW = heaterOn ? REQUIRED_PANEL_POWER_OFF_W : REQUIRED_PANEL_POWER_ON_W;
+	const bool panelPowerSupportsHeater = static_cast<float>(panelPowerW) >= requiredPanelPowerW;
+
+	int32_t estimatedHeaterCurrentMa = 0;
+	if (battVoltageMv >= MIN_VALID_BATT_VOLTAGE_MV) {
+		estimatedHeaterCurrentMa = static_cast<int32_t>((HEATER_EFFECTIVE_POWER_W * 1000000.0f) / static_cast<float>(battVoltageMv));
+	}
+
+	const bool batteryTrendSupportsHeater = heaterOn ? battCurrentMa >= NET_BATT_MARGIN_OFF_MA : (battCurrentMa - estimatedHeaterCurrentMa) >= NET_BATT_MARGIN_ON_MA;
+	const bool solarSurplusAllowsHeater = panelPowerSupportsHeater && batteryTrendSupportsHeater;
+	const bool powerOk = powerOkByBatteryRule || solarSurplusAllowsHeater;
 
 	if (!sensorConnected) {
 		if (sensorLostAtMs == 0) sensorLostAtMs = millis();
@@ -43,9 +74,9 @@ void controlHeater() {
 		return;
 	}
 
-	if (!heaterOn && waterTempC <= T_ON) {
+	if (!heaterOn && waterTempC <= TEMP_ON) {
 		digitalWrite(RELAY_PIN, HIGH);
-	} else if (heaterOn && waterTempC >= T_OFF) {
+	} else if (heaterOn && waterTempC >= TEMP_OFF) {
 		digitalWrite(RELAY_PIN, LOW);
 	}
 }
@@ -95,11 +126,12 @@ void loop() {
 	Serial.printf("Onewire: %f, DHT Temp: %f, DHT Humid: %f\r\n", oneWireCommon.getTempC(), dhtCommon.getTempC(), dhtCommon.getHumidPct());
 
 	if (WiFi.status() == WL_CONNECTED && veParser.hasFreshFrame()) {
-		if (!oneWireCommon.isConnected() || !dhtCommon.isConnected()) {
-			Serial.println("Skipping publish: one or more sensors disconnected");
-		} else {
-			if (publishCombinedPayload()) {
-				vTaskDelay(pdMS_TO_TICKS(30000));
+		const unsigned long now = millis();
+		if (combinedPayloadLastSentAtMs == 0 || now - combinedPayloadLastSentAtMs >= COMBINED_PAYLOAD_INTERVAL_MS) {
+			combinedPayloadLastSentAtMs = now;
+			if (!oneWireCommon.isConnected() || !dhtCommon.isConnected()) {
+				Serial.println("Skipping publish: one or more sensors disconnected");
+			} else if (publishCombinedPayload()) {
 			} else {
 				Serial.println("Failed to send combined payload");
 			}
