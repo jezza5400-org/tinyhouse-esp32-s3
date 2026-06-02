@@ -1,12 +1,13 @@
 #pragma once
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <stdint.h>
 
 class VeDirectParser {
 public:
 	void begin();
-	void poll();
+	void process(Stream &serialStream);
 	bool hasFreshFrame() const;
 
 	/*!
@@ -58,32 +59,20 @@ private:
 		InFrame,
 	};
 
-	/*!
-	 * @brief Returns the last known battery current in mA.
-	 */
-	int16_t getBattCurrentMa() const;
-
-	/*!
-	 * @brief Returns the last known panel power in W.
-	 */
-	uint16_t getPanelPowerW() const;
-
-private:
-	enum class ParseState : uint8_t {
-		Idle,
-		ReadingKey,
-		ReadingValue,
-	};
-
+	void resetWorkingFrame();
+	void startFrame();
+	void finalizeWorkingFrame();
 	void handleLine(const String &line);
 
 	ParseState _state = ParseState::Idle;
-	String _key;
-	String _value;
+	String _lineBuffer;
+	JsonDocument _workingFrameDoc;
+	JsonDocument _latestFrameDoc;
 	bool _hasFreshFrame = false;
 	uint32_t _lastValidFrameAtMs = 0;
 	uint16_t _battVoltage = 0;
 	uint16_t _panelVoltage = 0;
 	int32_t _battCurrentMa = 0;
 	uint16_t _panelPowerW = 0;
+	uint8_t _checksum = 0;
 };
